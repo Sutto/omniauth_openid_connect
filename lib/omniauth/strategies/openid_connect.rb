@@ -57,6 +57,8 @@ module OmniAuth
       option :extra_authorize_params, {}
       option :uid_field, 'sub'
 
+      option :debug_mode, false
+
       def uid
         user_info.raw_attributes[options.uid_field.to_sym] || user_info.sub
       end
@@ -220,12 +222,19 @@ module OmniAuth
           client_auth_method: options.client_auth_method
         )
 
+        if options.debug_mode
+          STDOUT.puts "[omniauth_openid_connect] AccessToken: #{@access_token.inspect}"
+        end
+
         verify_id_token!(@access_token.id_token) if configured_response_type == 'code'
 
         @access_token
       end
 
       def decode_id_token(id_token)
+        if options.debug_mode
+          STDOUT.puts "[omniauth_openid_connect] decode_id_token #{id_token.inspect} public_key=#{public_key.inspect}"
+        end
         ::OpenIDConnect::ResponseObject::IdToken.decode(id_token, public_key)
       end
 
@@ -339,6 +348,11 @@ module OmniAuth
 
       def verify_id_token!(id_token)
         return unless id_token
+
+        if options.debug_mode
+          STDOUT.puts "[omniauth_openid_connect] verify_id_token - #{id_token.inspect}"
+          STDOUT.puts "[omniauth_openid_connect] issuer=#{options.issuer.inspect} client_id=#{client_options.identifier} nonce=#{stored_nonce.inspect}"
+        end
 
         decode_id_token(id_token).verify!(issuer: options.issuer,
                                           client_id: client_options.identifier,
