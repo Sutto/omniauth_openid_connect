@@ -349,14 +349,16 @@ module OmniAuth
       def verify_id_token!(id_token)
         return unless id_token
 
+        nonce = stored_nonce
+
         if options.debug_mode
           STDOUT.puts "[omniauth_openid_connect] verify_id_token - #{id_token.inspect}"
-          STDOUT.puts "[omniauth_openid_connect] issuer=#{options.issuer.inspect} client_id=#{client_options.identifier} nonce=#{stored_nonce.inspect}"
+          STDOUT.puts "[omniauth_openid_connect] issuer=#{options.issuer.inspect} client_id=#{client_options.identifier} nonce=#{nonce.inspect}"
         end
 
         decode_id_token(id_token).verify!(issuer: options.issuer,
                                           client_id: client_options.identifier,
-                                          nonce: stored_nonce)
+                                          nonce: nonce)
       end
 
       class CallbackError < StandardError
